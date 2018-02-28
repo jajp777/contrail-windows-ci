@@ -13,7 +13,7 @@ function Get-TestConfiguration {
         DockerDriverConfiguration = [DockerDriverConfiguration] @{
             Username = "admin";
             Password = "c0ntrail123";
-            AuthUrl = "http://$( $Env:CONTROLLER_ADDRESS )/v2.0";
+            AuthUrl = "http://$( $Env:CONTROLLER_ADDRESS ):5000/v2.0";
             TenantConfiguration = [TenantConfiguration] @{
                 Name = "admin";
                 DefaultNetworkName = "testnet1";
