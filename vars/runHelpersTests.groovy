@@ -1,3 +1,4 @@
 def call() {
     shellCommandTests()
+    parseAddressesTests()
 }
