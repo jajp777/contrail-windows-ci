@@ -9,6 +9,7 @@ def testEnvName
 def testEnvFolder
 
 def testbeds
+def controller
 
 pipeline {
     agent none
@@ -151,6 +152,7 @@ pipeline {
 
                             provisionTestEnv(vmwareConfig)
                             testbeds = parseTestbedAddresses(inventoryFilePath)
+                            controller = parseControllerAddress(inventoryFilePath)
                         }
 
                         // 'Deploy' stage
@@ -161,6 +163,7 @@ pipeline {
                             unstash 'Artifacts'
 
                             env.TESTBED_ADDRESSES = testbeds.join(',')
+                            env.CONTROLLER_ADDRESS = controller
 
                             powershell script: './CIScripts/Deploy.ps1'
                         }
