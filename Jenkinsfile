@@ -170,6 +170,10 @@ pipeline {
                             deleteDir()
                             unstash 'CIScripts'
                             powershell script: './CIScripts/Test.ps1'
+
+                            // TODO: you can do better
+                            powershell script: 'Copy-Item C:\\Artifacts\\testReport.xml testReport.xml'
+                            stash name: 'testReport', includes: 'testReport.xml'
                         }
                     }
                 }
@@ -182,29 +186,31 @@ pipeline {
         LOG_SERVER_USER = "zuul-win"
         LOG_ROOT_DIR = "/var/www/logs/winci"
         BUILD_SPECIFIC_DIR = "${ZUUL_UUID}"
-        JOB_SUBPATH = env.JOB_NAME.replaceAll("/", "/job/")
-        REMOTE_DST_FILE = "${LOG_ROOT_DIR}/${BUILD_SPECIFIC_DIR}/log.txt.gz"
+        REMOTE_DST_DIR = "${LOG_ROOT_DIR}/${BUILD_SPECIFIC_DIR}"
+        REMOTE_DST_FILE = "${REMOTE_DST_DIR}/log.txt.gz"
     }
 
     post {
         always {
             node('master') {
-                script {
-                    // Job triggered by Zuul -> upload log file to public server.
-                    // Job triggered by Github CI repository (variable "ghprbPullId" exists) -> keep log "private".
+                unstash 'testReport'
 
-                    // TODO JUNIPER_WINDOWSSTUBS variable check is temporary and should be removed once
-                    // repository contrail-windows is accessible from Gerrit and it is main source of
-                    // windowsstubs code.
-                    if (env.ghprbPullId == null && env.JUNIPER_WINDOWSSTUBS == null) {
-                        // unstash "buildLogs"
-                        // TODO correct flags for rsync
-                        sh "ssh ${LOG_SERVER_USER}@${LOG_SERVER} \"mkdir -p ${LOG_ROOT_DIR}/${BUILD_SPECIFIC_DIR}\""
-                        def tmpLogFilename = "clean_log.txt.gz"
-                        obtainLogFile(env.JOB_NAME, env.BUILD_ID, tmpLogFilename)
-                        sh "rsync $tmpLogFilename ${LOG_SERVER_USER}@${LOG_SERVER}:${REMOTE_DST_FILE}"
-                        deleteDir()
+                script {
+                    if (ZUUL_UUID == null) {
+                        BUILD_SPECIFIC_DIR = "github/${JOB_NAME}/${BUILD_NUMBER}"
+                        REMOTE_DST_DIR = "${LOG_ROOT_DIR}/${BUILD_SPECIFIC_DIR}"
+                        REMOTE_DST_FILE = "${REMOTE_DST_DIR}/log.txt.gz"
                     }
+
+                    echo "BUILD_SPECIFIC_DIR: ${BUILD_SPECIFIC_DIR}"
+                    echo "REMOTE_DST_DIR: ${REMOTE_DST_DIR}"
+                    echo "REMOTE_DST_FILE: ${REMOTE_DST_FILE}"
+
+                    sh "ssh ${LOG_SERVER_USER}@${LOG_SERVER} \"mkdir -p ${REMOTE_DST_DIR}\""
+                    def tmpLogFilename = "clean_log.txt.gz"
+                    obtainLogFile(env.JOB_NAME, env.BUILD_ID, tmpLogFilename)
+                    sh "rsync $tmpLogFilename ${LOG_SERVER_USER}@${LOG_SERVER}:${REMOTE_DST_FILE}"
+                    sh "rsync testReport.xml ${LOG_SERVER_USER}@${LOG_SERVER}:${REMOTE_DST_DIR}"
                 }
 
                 build job: 'WinContrail/gather-build-stats', wait: false,

@@ -46,29 +46,25 @@ function Invoke-TestScenarios {
         "vRouterAgentService.Tests.ps1"
     )
 
-    $TotalFailedCount = 0
-
     $TestPaths = Get-ChildItem -Recurse -Filter "*.Tests.ps1"
-    Foreach ($TestPath in $TestPaths) {
-        if ($TestPath.Name -in $TestsBlacklist) {
-            Write-Host "Skipping $($TestPath.Name)"
-            continue
-        }
-
-        $PesterRunScript = @{
-            Path=$TestPath.FullName; 
+    $WhitelistedTestPaths = $TestPaths | Where-Object { !($_.Name -in $TestsBlacklist) }
+    $PesterScripts = $WhitelistedTestPaths | ForEach-Object {
+        @{
+            Path=$_.FullName;
             Parameters= @{
                 TestbedAddr=$Sessions[0].ComputerName;
                 ConfigFile=$TestConfigurationFile
             }; 
             Arguments=@()
         }
-
-        $Results = Invoke-Pester -PassThru -Script $PesterRunScript
-        $TotalFailedCount += $Results.FailedCount
     }
-    Write-Host "Num failed tests: $TotalFailedCount"
-    if ($TotalFailedCount -gt 0) {
+    # TODO: you can do better
+    $OutputXmlPath = "C:\Artifacts\testReport.xml"
+    $Results = Invoke-Pester -PassThru -Script $PesterScripts `
+        -OutputFormat NUnitXml -OutputFile $OutputXmlPath
+    Write-Host "Num failed tests: $($Results.FailedCount)"
+    Write-Host "Report written to $OutputXmlPath"
+    if ($Results.FailedCount -gt 0) {
         throw "Some tests failed"
     }
 }
