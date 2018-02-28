@@ -70,6 +70,7 @@ pipeline {
                 timeout time: 5, unit: 'MINUTES'
             }
             steps {
+                deleteDir()
                 unstash "Monitoring"
                 dir("monitoring") {
                     sh "./test_stats.py"

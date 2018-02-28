@@ -14,7 +14,7 @@ def call() {
     assert testbeds == ["1.2.3.4", "1.2.3.5"]
 
     def controller = parseControllerAddress(inventory_file)
-    assert controller == ["1.2.3.6"]
+    assert controller == "1.2.3.6"
 
     echo "OK"
 }
