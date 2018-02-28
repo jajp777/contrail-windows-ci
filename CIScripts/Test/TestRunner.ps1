@@ -1,5 +1,4 @@
 . $PSScriptRoot\TestConfigurationUtils.ps1
-. $PSScriptRoot\Utils\ContrailUtils.ps1
 
 . $PSScriptRoot\Tests\ExtensionLongLeakTest.ps1
 . $PSScriptRoot\Tests\MultiEnableDisableExtensionTest.ps1
@@ -26,17 +25,34 @@ function Invoke-TestScenarios {
     $DDConf = $TestConf.DockerDriverConfiguration
     $TenantConf = $DDConf.TenantConfiguration
 
-    $AuthToken = Get-AccessTokenFromKeystone `
-        -AuthUrl $DDConf.AuthUrl `
-        -Username $DDConf.Username `
-        -Password $DDConf.Password `
-        -TenantName $TenantConf.Name
+    $AuthUrl = $DDConf.AuthUrl
+    $Username = $DDConf.Username
+    $Password = $DDConf.Password
+    $TenantName = $TenantConf.Name
 
-    Add-ContrailVirtualNetwork `
-        -ContrailUrl "http://$( $TestConf.ControllerIP ):$( $TestConf.ControllerRestPort )" `
-        -AuthToken $AuthToken `
-        -TenantName $TenantConf.Name `
-        -NetworkName $TenantConf.DefaultNetworkName
+    $ContrailUrl = "http://$( $TestConf.ControllerIP ):$( $TestConf.ControllerRestPort )"
+    $NetworkName = $TenantConf.DefaultNetworkName
+
+    $RemoteScriptFile = "C:\Artifacts\ContrailUtils.ps1"
+
+    Copy-Item $PSScriptRoot\Utils\ContrailUtils.ps1 `
+        -ToSession $Sessions[0] -Destination $RemoteScriptFile -Force
+
+    Invoke-Command -Session $Sessions[0] {
+        . $Using:RemoteScriptFile
+
+        $AuthToken = Get-AccessTokenFromKeystone `
+            -AuthUrl $Using:AuthUrl `
+            -Username $Using:Username `
+            -Password $Using:Password `
+            -TenantName $Using:TenantName
+
+        Add-ContrailVirtualNetwork `
+            -ContrailUrl $Using:ContrailUrl `
+            -AuthToken $AuthToken `
+            -TenantName $Using:TenantName `
+            -NetworkName $Using:NetworkName
+    }
 
     $TestConfiguration = $TestConf
 
