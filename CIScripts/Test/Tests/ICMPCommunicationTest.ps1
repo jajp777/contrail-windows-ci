@@ -54,10 +54,12 @@ function Test-ICMPCommunication {
 
         Write-Host "Testing ping"
         $Res1 = Invoke-Command -Session $Session -ScriptBlock {
-            docker exec $Using:Container1ID powershell "ping $Using:Container2IP > null 2>&1; `$LASTEXITCODE;"
+            $Container2IP = $Using:Container2NetInfo.IPAddress
+            docker exec $Using:Container1ID powershell "ping $Container2IP > null 2>&1; `$LASTEXITCODE;"
         }
         $Res2 = Invoke-Command -Session $Session -ScriptBlock {
-            docker exec $Using:Container2ID powershell "ping $Using:Container1IP > null 2>&1; `$LASTEXITCODE;"
+            $Container1IP = $Using:Container1NetInfo.IPAddress
+            docker exec $Using:Container2ID powershell "ping $Container1IP > null 2>&1; `$LASTEXITCODE;"
         }
 
         Write-Host "Removing containers"
