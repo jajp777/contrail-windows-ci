@@ -40,6 +40,7 @@ dashboard:
                 FROM builds
                 WHERE finished_at_secs >= $__unixEpochFrom() && finished_at_secs <= $__unixEpochTo()
                   AND job_name in ($Job)
+                  AND status in ($Status)
                 GROUP BY status, (finished_at_secs - $__unixEpochFrom()) DIV (($__unixEpochTo()-$__unixEpochFrom())/7)
                 ORDER BY finished_at_secs ASC
         - title: Job length
@@ -86,4 +87,5 @@ dashboard:
                   finished_at_secs >= $__unixEpochFrom()
                   AND finished_at_secs <= $__unixEpochTo()
                   AND job_name in ($Job)
+                  AND builds.status in ($Status)
                 ORDER BY finished_at_secs ASC, stages.id ASC
