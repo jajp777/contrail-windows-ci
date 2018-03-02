@@ -44,6 +44,7 @@
   win_shell: "docker pull {{ item }}"
   with_items:
       - microsoft/nanoserver
+      - microsoft/windowsservercore
 
 - name: Install MS Visuall C++ Redist 14
   win_chocolatey:
