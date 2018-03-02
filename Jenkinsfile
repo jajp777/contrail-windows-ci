@@ -114,7 +114,7 @@ pipeline {
                 TEST_CONFIGURATION_FILE = "GetTestConfigurationJuni.ps1"
                 TESTBED = credentials('win-testbed')
                 ARTIFACTS_DIR = "output"
-                TESTBED_TEMPLATE = "Template-testbed-201802130923"
+                TESTBED_TEMPLATE = "Template-testbed-201803020337-pull-microsoft-nanoserver"
                 CONTROLLER_TEMPLATE = "Template-CentOS-7.4"
             }
 
