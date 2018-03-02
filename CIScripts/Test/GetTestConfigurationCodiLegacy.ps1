@@ -13,6 +13,7 @@ function Get-TestConfiguration {
         DockerDriverConfiguration = [DockerDriverConfiguration] @{
             Username = "admin";
             Password = "secret123";
+            TenantName = "ci_tests"; # Only for keystone
             AuthUrl = "http://10.7.0.54:5000/v2.0";
             TenantConfiguration = [TenantConfiguration] @{
                 Name = "ci_tests";
