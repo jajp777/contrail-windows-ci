@@ -1,0 +1,142 @@
+dashboard:
+  title: Build statistics v2
+  time:
+    from: now-7d
+    to: now
+  rows:
+    - title: winci-server2016-devel
+      showTitle: true
+      height: 300px
+      panels:
+        - title: Number of successes / failures
+          type: graph
+          span: 4
+          datasource: 'mysql:monitoring_test'
+          stack: true
+          targets:
+            - target:
+              format: time_series
+              rawSql: |
+                SELECT
+                  min(finished_at_secs - $__unixEpochFrom())
+                      - CAST(mod(min(finished_at_secs - $__unixEpochFrom()), ($__unixEpochTo()-$__unixEpochFrom())/7) as unsigned)
+                      + $__unixEpochFrom() as time_sec,
+                  count(build_id) as value,
+                  status as metric
+                FROM builds
+                WHERE finished_at_secs >= $__unixEpochFrom() && finished_at_secs <= $__unixEpochTo()
+                  AND job_name = 'WinContrail/winci-server2016-devel'
+                GROUP BY status, (finished_at_secs - $__unixEpochFrom()) DIV (($__unixEpochTo()-$__unixEpochFrom())/7)
+                ORDER BY finished_at_secs ASC
+        - title: Job length
+          type: graph
+          span: 4
+          datasource: 'mysql:monitoring_test'
+          yaxes:
+            - format: ms
+            - format: short
+          targets:
+            - target:
+              format: time_series
+              rawSql: |
+                SELECT
+                  finished_at_secs as time_sec,
+                  duration_millis as value,
+                  'all' as metric -- can also use status as metric
+                FROM builds
+                WHERE
+                  finished_at_secs >= $__unixEpochFrom()
+                  AND finished_at_secs <= $__unixEpochTo()
+                  AND job_name = 'WinContrail/winci-server2016-devel'
+                ORDER BY finished_at_secs ASC
+        - title: Stages
+          type: graph
+          span: 4
+          datasource: 'mysql:monitoring_test'
+          yaxes:
+            - format: ms
+            - format: short
+          stack: true
+          targets:
+            - target:
+              format: time_series
+              rawSql: |
+                SELECT
+                  finished_at_secs as time_sec,
+                  stages.duration_millis as value,
+                  stages.name as metric
+                FROM builds
+                JOIN stages ON stages.build_id = builds.id
+                WHERE
+                  finished_at_secs >= $__unixEpochFrom()
+                  AND finished_at_secs <= $__unixEpochTo()
+                  AND job_name = 'WinContrail/winci-server2016-devel'
+                ORDER BY finished_at_secs ASC, stages.id ASC
+    - title: winci-server2016-prod
+      showTitle: true
+      height: 300px
+      panels:
+        - title: Number of successes / failures
+          type: graph
+          span: 4
+          datasource: 'mysql:monitoring_test'
+          stack: true
+          targets:
+            - target:
+              format: time_series
+              rawSql: |
+                SELECT
+                  min(finished_at_secs - $__unixEpochFrom())
+                    - CAST(mod(min(finished_at_secs - $__unixEpochFrom()), ($__unixEpochTo()-$__unixEpochFrom())/7) as unsigned)
+                    + $__unixEpochFrom() as time_sec,
+                  count(build_id) as value,
+                  status as metric
+                FROM builds
+                WHERE finished_at_secs >= $__unixEpochFrom() && finished_at_secs <= $__unixEpochTo()
+                  AND job_name = 'WinContrail/winci-server2016-prod'
+                GROUP BY status, (finished_at_secs - $__unixEpochFrom()) DIV (($__unixEpochTo()-$__unixEpochFrom())/7)
+                ORDER BY finished_at_secs ASC
+        - title: Job length
+          type: graph
+          span: 4
+          datasource: 'mysql:monitoring_test'
+          yaxes:
+            - format: ms
+            - format: short
+          targets:
+            - target:
+              format: time_series
+              rawSql: |
+                SELECT
+                  finished_at_secs as time_sec,
+                  duration_millis as value,
+                  'all' as metric -- can also use status as metric
+                FROM builds
+                WHERE
+                  finished_at_secs >= $__unixEpochFrom()
+                  AND finished_at_secs <= $__unixEpochTo()
+                  AND job_name = 'WinContrail/winci-server2016-prod'
+                ORDER BY finished_at_secs ASC
+        - title: Stages
+          type: graph
+          span: 4
+          datasource: 'mysql:monitoring_test'
+          yaxes:
+            - format: ms
+            - format: short
+          stack: true
+          targets:
+            - target:
+              format: time_series
+              rawSql: |
+                SELECT
+                  finished_at_secs as time_sec,
+                  stages.duration_millis as value,
+                  stages.name as metric
+                FROM builds
+                JOIN stages ON stages.build_id = builds.id
+                WHERE
+                  finished_at_secs >= $__unixEpochFrom()
+                  AND finished_at_secs <= $__unixEpochTo()
+                  AND job_name = 'WinContrail/winci-server2016-prod'
+                ORDER BY finished_at_secs ASC, stages.id ASC
