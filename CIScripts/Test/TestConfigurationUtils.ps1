@@ -17,6 +17,7 @@ class TenantConfiguration {
 class DockerDriverConfiguration {
     [string] $Username;
     [string] $Password;
+    [string] $TenantName;
     [string] $AuthUrl;
     [TenantConfiguration] $TenantConfiguration;
 }
@@ -118,7 +119,7 @@ function Enable-DockerDriver {
 
     Write-Host "Enabling Docker Driver"
 
-    $TenantName = $Configuration.TenantConfiguration.Name
+    $TenantName = $Configuration.TenantName
 
     Invoke-Command -Session $Session -ScriptBlock {
 

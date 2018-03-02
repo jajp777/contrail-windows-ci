@@ -13,9 +13,10 @@ function Get-TestConfiguration {
         DockerDriverConfiguration = [DockerDriverConfiguration] @{
             Username = "admin";
             Password = "c0ntrail123";
+            TenantName = "admin"; # Only for keystone
             AuthUrl = "http://$( $Env:CONTROLLER_ADDRESS ):5000/v2.0";
             TenantConfiguration = [TenantConfiguration] @{
-                Name = "admin";
+                Name = "ci_tests";
                 DefaultNetworkName = "testnet1";
                 SingleSubnetNetwork = [NetworkConfiguration] @{
                     Name = "testnet1";

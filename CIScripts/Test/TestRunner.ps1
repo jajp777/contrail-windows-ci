@@ -26,15 +26,21 @@ function Invoke-TestScenarios {
     $TestConf = Get-TestConfiguration
     $DDConf = $TestConf.DockerDriverConfiguration
     $TenantConf = $DDConf.TenantConfiguration
+    $ContrailUrl = "http://$( $TestConf.ControllerIP ):$( $TestConf.ControllerRestPort )"
 
     $AuthToken = Get-AccessTokenFromKeystone `
         -AuthUrl $DDConf.AuthUrl `
         -Username $DDConf.Username `
         -Password $DDConf.Password `
-        -TenantName $TenantConf.Name
+        -TenantName $DDConf.TenantName
+
+    Add-ContrailProject `
+        -ContrailUrl $ContrailUrl `
+        -AuthToken $AuthToken `
+        -ProjectName $TenantConf.Name
 
     Add-ContrailVirtualNetwork `
-        -ContrailUrl "http://$( $TestConf.ControllerIP ):$( $TestConf.ControllerRestPort )" `
+        -ContrailUrl $ContrailUrl `
         -AuthToken $AuthToken `
         -TenantName $TenantConf.Name `
         -NetworkName $TenantConf.DefaultNetworkName
